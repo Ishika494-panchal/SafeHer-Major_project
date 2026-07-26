@@ -1,4 +1,5 @@
+# Environment variables — never commit credentials
 .env
-venv/
-__pycache__/
-*.pyc
+
+# npm dependencies
+node_modules/
