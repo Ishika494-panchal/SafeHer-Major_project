@@ -1,0 +1,13 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="256" cy="256" r="256" fill="url(#purple_grad)"/>
+  <defs>
+    <linearGradient id="purple_grad" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9333EA"/>
+      <stop offset="1" stop-color="#6B21A8"/>
+    </linearGradient>
+  </defs>
+  <!-- Outer Shield -->
+  <path d="M256 110 C 310 142, 365 148, 375 150 C 378 265, 350 350, 256 410 C 162 350, 134 265, 137 150 C 147 148, 202 142, 256 110 Z" fill="none" stroke="white" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Inner Shield -->
+  <path d="M256 150 C 298 174, 340 178, 348 180 C 350 255, 330 325, 256 370 C 182 325, 162 255, 164 180 C 172 178, 214 174, 256 150 Z" fill="none" stroke="white" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,5 +1,0 @@
-# Environment variables — never commit credentials
-.env
-
-# npm dependencies
-node_modules/
