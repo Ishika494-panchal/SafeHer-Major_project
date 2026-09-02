@@ -18,9 +18,11 @@ import {
   ArrowRight,
   ShieldAlert
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
-export default function Hero({ onOpenSos, onGetStarted }) {
+export default function Hero({ onOpenSos, onGetStarted, onOpenContacts }) {
   const [sosActive, setSosActive] = useState(false);
+  const { currentUser } = useAuth();
 
   const handleSosClick = () => {
     setSosActive(true);
@@ -69,17 +71,27 @@ export default function Hero({ onOpenSos, onGetStarted }) {
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 text-base font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9] rounded-full shadow-glow-purple transition-all duration-300 transform hover:-translate-y-0.5"
                 >
                   <Activity className="w-5 h-5" />
-                  <span>Launch Live Protection Dashboard</span>
+                  <span>{currentUser ? 'Go to Live Protection Dashboard' : 'Launch Live Protection Dashboard'}</span>
                 </button>
 
-                {/* Test Emergency SOS Button */}
-                <button
-                  onClick={handleSosClick}
-                  className="w-full sm:w-auto group relative inline-flex items-center justify-center gap-2.5 px-7 py-3.5 text-base font-bold text-white bg-[#E11D48] hover:bg-rose-700 rounded-full shadow-glow-sos hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
-                >
-                  <BellRing className={`w-5 h-5 ${sosActive ? 'animate-bounce' : 'animate-pulse'}`} />
-                  <span>{sosActive ? 'SOS Alert Dispatched!' : 'Test Hold SOS'}</span>
-                </button>
+                {/* Test Emergency SOS or Get Started */}
+                {currentUser ? (
+                  <button
+                    onClick={handleSosClick}
+                    className="w-full sm:w-auto group relative inline-flex items-center justify-center gap-2.5 px-7 py-3.5 text-base font-bold text-white bg-[#E11D48] hover:bg-rose-700 rounded-full shadow-glow-sos hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+                  >
+                    <BellRing className={`w-5 h-5 ${sosActive ? 'animate-bounce' : 'animate-pulse'}`} />
+                    <span>{sosActive ? 'SOS Alert Dispatched!' : 'Test Hold SOS'}</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={onGetStarted}
+                    className="w-full sm:w-auto group relative inline-flex items-center justify-center gap-2.5 px-7 py-3.5 text-base font-bold text-[#7C3AED] bg-purple-100 hover:bg-purple-200 rounded-full transition-all duration-300 transform hover:-translate-y-0.5"
+                  >
+                    <span>Get Started Free</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+                )}
               </div>
 
               {/* Trust Statistics Strip */}
@@ -337,14 +349,23 @@ export default function Hero({ onOpenSos, onGetStarted }) {
               onClick={onOpenSos}
               className="w-full sm:w-auto px-8 py-3.5 bg-white text-[#7C3AED] hover:bg-purple-50 font-bold text-sm rounded-full shadow-md transition"
             >
-              Open Live Dashboard
+              {currentUser ? 'Go to Live Dashboard' : 'Open Live Dashboard'}
             </button>
-            <button
-              onClick={onGetStarted}
-              className="w-full sm:w-auto px-8 py-3.5 bg-[#E11D48] hover:bg-rose-700 text-white font-bold text-sm rounded-full shadow-glow-sos transition"
-            >
-              Create Account
-            </button>
+            {currentUser ? (
+              <button
+                onClick={onOpenContacts}
+                className="w-full sm:w-auto px-8 py-3.5 bg-purple-900/60 hover:bg-purple-900/80 text-white font-bold text-sm rounded-full border border-purple-300/40 transition"
+              >
+                Manage Emergency Contacts
+              </button>
+            ) : (
+              <button
+                onClick={onGetStarted}
+                className="w-full sm:w-auto px-8 py-3.5 bg-[#E11D48] hover:bg-rose-700 text-white font-bold text-sm rounded-full shadow-glow-sos transition"
+              >
+                Create Account
+              </button>
+            )}
           </div>
         </div>
       </section>

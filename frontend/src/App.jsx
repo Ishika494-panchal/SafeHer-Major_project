@@ -5,14 +5,17 @@ import Hero from './components/Hero';
 import Dashboard from './components/Dashboard';
 import EmergencyContacts from './components/EmergencyContacts';
 import AuthModal from './components/AuthModal';
+import ReportModal from './components/ReportModal';
+import AdminPanel from './components/AdminPanel';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function MainApp() {
   const { currentUser, authToken } = useAuth();
-  const [currentTab, setCurrentTab] = useState('dashboard');
+  const [currentTab, setCurrentTab] = useState('landing');
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
+  const [reportModalOpen, setReportModalOpen] = useState(false);
   
   // Contacts state synced across components
   const [contacts, setContacts] = useState([
@@ -20,6 +23,13 @@ function MainApp() {
     { id: '2', name: 'Maya Lin', phone: '+1 555-0188', relationship: 'Best Friend' },
     { id: '3', name: 'Campus Safety Officer', phone: '+1 555-0199', relationship: 'Guardian' }
   ]);
+
+  // When user logs out, redirect to Overview landing page
+  useEffect(() => {
+    if (!currentUser && currentTab !== 'landing') {
+      setCurrentTab('landing');
+    }
+  }, [currentUser]);
 
   // Fetch real contacts from backend when user token is present
   useEffect(() => {
@@ -43,11 +53,16 @@ function MainApp() {
   };
 
   const handleSelectTab = (tab) => {
-    if ((tab === 'dashboard' || tab === 'contacts') && !currentUser) {
+    if ((tab === 'dashboard' || tab === 'contacts' || tab === 'admin') && !currentUser) {
       handleOpenAuth('login');
       return;
     }
     setCurrentTab(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleAuthSuccess = () => {
+    setCurrentTab('dashboard');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -58,6 +73,7 @@ function MainApp() {
         currentTab={currentTab} 
         onSelectTab={handleSelectTab} 
         onOpenAuth={handleOpenAuth} 
+        onOpenReportModal={() => setReportModalOpen(true)}
       />
 
       {/* Main App Content View */}
@@ -66,6 +82,7 @@ function MainApp() {
           <Dashboard 
             contacts={contacts} 
             onNavigateToContacts={() => handleSelectTab('contacts')} 
+            onOpenReportModal={() => setReportModalOpen(true)}
           />
         )}
 
@@ -76,10 +93,17 @@ function MainApp() {
           />
         )}
 
+        {currentTab === 'admin' && (
+          <AdminPanel 
+            onReportStatusChanged={() => {}}
+          />
+        )}
+
         {currentTab === 'landing' && (
           <Hero 
             onOpenSos={() => handleSelectTab('dashboard')}
             onGetStarted={() => handleOpenAuth('register')}
+            onOpenContacts={() => handleSelectTab('contacts')}
           />
         )}
       </main>
@@ -88,7 +112,18 @@ function MainApp() {
       <AuthModal
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
+        onSuccess={handleAuthSuccess}
         initialMode={authMode}
+      />
+
+      {/* Anonymous Incident Reporting Modal */}
+      <ReportModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        userLocation={null}
+        onReportSubmitted={() => {
+          // Heatmap will re-poll on next interval or upon moderation approval
+        }}
       />
     </div>
   );
@@ -101,3 +136,4 @@ export default function App() {
     </AuthProvider>
   );
 }
+

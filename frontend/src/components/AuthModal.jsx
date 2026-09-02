@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Shield, Lock, Mail, User, Phone, LogIn, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
+export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'login' }) {
   const [isLogin, setIsLogin] = useState(initialMode === 'login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -10,6 +10,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setIsLogin(initialMode === 'login');
+      setError('');
+    }
+  }, [isOpen, initialMode]);
 
   const { login, register, loginWithGoogle } = useAuth();
 
@@ -27,6 +34,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
         if (!name.trim()) throw new Error("Please enter your full name");
         await register(name, email, password, phone);
       }
+      if (onSuccess) onSuccess();
       onClose();
     } catch (err) {
       setError(err.message || "Authentication failed. Please try again.");
@@ -40,6 +48,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
     setLoading(true);
     try {
       await loginWithGoogle();
+      if (onSuccess) onSuccess();
       onClose();
     } catch (err) {
       setError(err.message || "Google Authentication failed.");

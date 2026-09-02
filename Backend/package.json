@@ -1,0 +1,21 @@
+{
+  "name": "safeher-backend",
+  "version": "1.0.0",
+  "description": "SafeHer Node.js Express Core Backend Engine",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node tests/test_backend.js"
+  },
+  "dependencies": {
+    "axios": "^1.20.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1",
+    "sqlite3": "^5.1.7",
+    "uuid": "^11.0.5"
+  }
+}

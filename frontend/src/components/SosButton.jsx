@@ -40,6 +40,18 @@ export default function SosButton({ onSosTriggered, onSosCancelled, isSosActive,
   const triggerEmergency = async () => {
     setIsHolding(false);
     setIsDispatching(true);
+
+    // Audio speech announcement for instant user confirmation
+    if ('speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance("Emergency SOS activated. Live location alert dispatched to your emergency contacts.");
+        msg.rate = 1.0;
+        msg.volume = 1.0;
+        window.speechSynthesis.speak(msg);
+      } catch (e) {}
+    }
+
     try {
       if (onSosTriggered) {
         await onSosTriggered();

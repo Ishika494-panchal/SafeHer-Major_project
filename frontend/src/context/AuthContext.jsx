@@ -20,7 +20,7 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
-  const [authToken, setAuthToken] = useState(localStorage.getItem('safeher_token') || 'dev-token-123');
+  const [authToken, setAuthToken] = useState(localStorage.getItem('safeher_token') || null);
   const [loading, setLoading] = useState(true);
 
   // Sync user profile with FastAPI backend
@@ -79,7 +79,7 @@ export function AuthProvider({ children }) {
       });
       return unsubscribe;
     } else {
-      // Dev mode initialization: check stored session or default demo user
+      // Dev mode initialization: check stored session
       const storedDevUser = localStorage.getItem('safeher_dev_user');
       if (storedDevUser) {
         try {
@@ -87,26 +87,17 @@ export function AuthProvider({ children }) {
           setCurrentUser(parsed);
           setAuthToken(`dev-token-${parsed.id}`);
         } catch {
-          initDefaultDevUser();
+          setCurrentUser(null);
+          setAuthToken(null);
+          localStorage.removeItem('safeher_dev_user');
         }
       } else {
-        initDefaultDevUser();
+        setCurrentUser(null);
+        setAuthToken(null);
       }
       setLoading(false);
     }
   }, []);
-
-  const initDefaultDevUser = () => {
-    const defaultUser = {
-      id: 'dev_user_123',
-      name: 'SafeHer Guardian',
-      email: 'demo@safeher.app',
-      phone: '+1-555-0199'
-    };
-    setCurrentUser(defaultUser);
-    setAuthToken('dev-token-123');
-    localStorage.setItem('safeher_dev_user', JSON.stringify(defaultUser));
-  };
 
   // Sign In with Email & Password
   const login = async (email, password) => {
