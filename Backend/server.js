@@ -12,6 +12,7 @@ import sosRouter from './routes/sos.js';
 import reportsRouter from './routes/reports.js';
 import heatmapRouter from './routes/heatmap.js';
 import routesRouter from './routes/routes.js';
+import adminReportsRouter from './routes/adminReports.js';
 
 dotenv.config();
 
@@ -48,11 +49,13 @@ app.use('/static', express.static(staticDir));
 // Register API Routes
 app.use('/auth',     authRouter);
 app.use('/contacts', contactsRouter);
-app.use('/sos',      sosRouter);      // existing frontend calls use /sos/*
-app.use('/api/sos',  sosRouter);      // new spec prefix: /api/sos/*
+app.use('/sos',      sosRouter);
+app.use('/api/sos',  sosRouter);
 app.use('/reports',  reportsRouter);
+app.use('/api/reports', reportsRouter);
 app.use('/heatmap',  heatmapRouter);
 app.use('/routes',   routesRouter);
+app.use('/api/admin/reports', adminReportsRouter);
 
 // Root health check endpoint
 app.get('/', (req, res) => {

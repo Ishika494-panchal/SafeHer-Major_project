@@ -1,8 +1,62 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.heat';
 import { Flame, ShieldAlert, AlertTriangle, ShieldCheck, Navigation, MapPin } from 'lucide-react';
+
+/**
+ * HeatmapLayer — integrates the vanilla leaflet.heat plugin inside react-leaflet.
+ * Since leaflet.heat has no official React bindings, we use the useMap() hook
+ * to access the raw Leaflet map instance and manually manage the heat layer lifecycle.
+ */
+function HeatmapLayer({ points, options }) {
+  const map = useMap();
+  const layerRef = useRef(null);
+
+  useEffect(() => {
+    if (!map || !points || points.length === 0) {
+      if (layerRef.current) {
+        layerRef.current.remove();
+        layerRef.current = null;
+      }
+      return;
+    }
+
+    // Convert [{lat, lng, weight}] → [[lat, lng, weight]] for L.heatLayer
+    const heatData = points.map((p) => [p.lat, p.lng, p.weight || 1]);
+
+    const defaultOptions = {
+      radius: 25,
+      blur: 20,
+      maxZoom: 17,
+      max: 1.0,
+      gradient: {
+        0.2: '#10B981',  // Green — low density
+        0.5: '#F59E0B',  // Amber — medium density
+        0.8: '#E11D48',  // Red — high density
+        1.0: '#991B1B',  // Deep red — hotspot
+      },
+      ...options,
+    };
+
+    // Remove previous layer before creating a new one
+    if (layerRef.current) {
+      layerRef.current.remove();
+    }
+
+    layerRef.current = L.heatLayer(heatData, defaultOptions).addTo(map);
+
+    return () => {
+      if (layerRef.current) {
+        layerRef.current.remove();
+        layerRef.current = null;
+      }
+    };
+  }, [map, points, options]);
+
+  return null;
+}
 
 // Fix for default Leaflet marker icon paths in React/Vite builds
 delete L.Icon.Default.prototype._getIconUrl;
@@ -61,6 +115,7 @@ export default function LiveMap({
   locationHistory = [],
   guardians = [],
   dangerZones = [],
+  heatmapPoints = [],
   routes = null,
   selectedRouteType = 'safest',
   isPickingOnMap = false,
@@ -123,7 +178,12 @@ export default function LiveMap({
         <MapRecenter center={currentCenter} />
         <MapClickListener onMapClick={onMapClick} isPickingOnMap={isPickingOnMap} />
 
-        {/* DANGER ZONES & HEATMAP OVERLAYS */}
+        {/* LEAFLET.HEAT DENSITY HEATMAP LAYER */}
+        {showHeatmap && heatmapPoints.length > 0 && (
+          <HeatmapLayer points={heatmapPoints} />
+        )}
+
+        {/* DANGER ZONES CIRCLE OVERLAYS */}
         {showHeatmap && dangerZones.map((zone, idx) => {
           const style = getRiskStyle(zone.risk_score);
           return (

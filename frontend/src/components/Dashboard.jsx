@@ -37,6 +37,7 @@ export default function Dashboard({ contacts = [], onNavigateToContacts, onOpenR
   const [geoErrorMessage, setGeoErrorMessage] = useState('');
   const [sosLatencyMs, setSosLatencyMs] = useState(null);
   const [dangerZones, setDangerZones] = useState([]);
+  const [heatmapPoints, setHeatmapPoints] = useState([]);
   
   // Real-time Emergency Dispatch Notification state
   const [dispatchedNotifications, setDispatchedNotifications] = useState([]);
@@ -58,6 +59,7 @@ export default function Dashboard({ contacts = [], onNavigateToContacts, onOpenR
       if (res.ok) {
         const data = await res.json();
         setDangerZones(data.danger_zones || []);
+        setHeatmapPoints(data.heatmap_points || []);
       }
     } catch (e) {
       // Fallback
@@ -451,6 +453,7 @@ export default function Dashboard({ contacts = [], onNavigateToContacts, onOpenR
               locationHistory={locationHistory}
               guardians={contacts}
               dangerZones={dangerZones}
+              heatmapPoints={heatmapPoints}
               routes={routes}
               selectedRouteType={selectedRouteType}
               isPickingOnMap={isPickingOnMap}
