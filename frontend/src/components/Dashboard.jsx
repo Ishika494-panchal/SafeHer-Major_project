@@ -269,19 +269,46 @@ export default function Dashboard({ contacts = [], onNavigateToContacts, onOpenR
     setShowDispatchToast(false);
   };
 
-  // Phase 5: Calculate Safe Route Recommendations
+  // Safe Corridor Navigator — calls OSRM-backed /api/routes/safe-navigation
   const handleCalculateRoutes = async (params) => {
     setRouteLoading(true);
     try {
-      const queryStr = new URLSearchParams(params).toString();
-      const res = await fetch(`${API_BASE_URL}/routes/?${queryStr}`);
-      if (!res.ok) throw new Error('Failed to compute safe routes.');
-      const data = await res.json();
-      setRoutes(data);
+      // Build query string — accept both snake_case and camelCase keys from callers
+      const qs = new URLSearchParams({
+        originLat: params.origin_lat ?? params.originLat,
+        originLng: params.origin_lng ?? params.originLng,
+        destLat:   params.dest_lat   ?? params.destLat,
+        destLng:   params.dest_lng   ?? params.destLng,
+      }).toString();
+
+      const res = await fetch(`${API_BASE_URL}/api/routes/safe-navigation?${qs}`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || 'Failed to compute safe routes.');
+      }
+
+      const data = await res.json(); // { routes: { fastest, shortest, safest }, note }
+
+      // Normalise field names so RouteComparisonCard (total_distance_km etc.)
+      // and LiveMap (.geometry) both work without any component changes.
+      const normalise = (r) => r ? ({
+        ...r,
+        coordinates:       r.geometry,          // LiveMap legacy key
+        total_distance_km: r.distanceKm,        // RouteComparisonCard
+        total_time_minutes: r.durationMin,      // RouteComparisonCard
+        total_risk_score:  r.riskScore,         // RouteComparisonCard
+        risk_tier: r.riskScore < 34 ? 'safe' : r.riskScore < 67 ? 'warning' : 'danger',
+      }) : null;
+
+      setRoutes({
+        fastest:  normalise(data.routes?.fastest),
+        shortest: normalise(data.routes?.shortest),
+        safest:   normalise(data.routes?.safest),
+      });
       setSelectedRouteType('safest');
       setIsPickingOnMap(false);
     } catch (e) {
-      alert('Error calculating routes. Please try again.');
+      alert(`Route calculation failed: ${e.message}`);
     } finally {
       setRouteLoading(false);
     }

@@ -228,63 +228,73 @@ export default function LiveMap({
           );
         })}
 
-        {/* PHASE 5: MULTI-ROUTE POLYLINES */}
-        {routes && (
-          <>
-            {/* 1. FASTEST ROUTE (Slate Gray) */}
-            {routes.fastest && routes.fastest.coordinates && (
-              <Polyline
-                positions={routes.fastest.coordinates}
-                pathOptions={{
-                  color: '#64748B',
-                  weight: selectedRouteType === 'fastest' ? 6 : 3,
-                  opacity: selectedRouteType === 'fastest' ? 0.95 : 0.4,
-                  dashArray: '3, 6'
-                }}
-              />
-            )}
+        {/* SAFE CORRIDOR NAVIGATOR — MULTI-ROUTE POLYLINES */}
+        {routes && (() => {
+          // Support both new endpoint shape (.geometry) and legacy shape (.coordinates)
+          const fastest = routes.fastest;
+          const shortest = routes.shortest;
+          const safest = routes.safest;
+          const getCoords = (r) => r?.geometry || r?.coordinates || [];
 
-            {/* 2. SHORTEST ROUTE (Blue) */}
-            {routes.shortest && routes.shortest.coordinates && (
-              <Polyline
-                positions={routes.shortest.coordinates}
-                pathOptions={{
-                  color: '#3B82F6',
-                  weight: selectedRouteType === 'shortest' ? 6 : 3,
-                  opacity: selectedRouteType === 'shortest' ? 0.95 : 0.4,
-                  dashArray: '6, 6'
-                }}
-              />
-            )}
+          return (
+            <>
+              {/* 1. FASTEST ROUTE — Blue */}
+              {fastest && getCoords(fastest).length > 0 && (
+                <Polyline
+                  positions={getCoords(fastest)}
+                  pathOptions={{
+                    color: '#3B82F6',
+                    weight: selectedRouteType === 'fastest' ? 6 : 3,
+                    opacity: selectedRouteType === 'fastest' ? 0.95 : 0.4,
+                    dashArray: '5, 8'
+                  }}
+                />
+              )}
 
-            {/* 3. SAFEST ROUTE (Violet - Differentiator) */}
-            {routes.safest && routes.safest.coordinates && (
-              <Polyline
-                positions={routes.safest.coordinates}
-                pathOptions={{
-                  color: '#7C3AED',
-                  weight: selectedRouteType === 'safest' ? 7 : 4,
-                  opacity: selectedRouteType === 'safest' ? 0.95 : 0.5,
-                }}
-              />
-            )}
+              {/* 2. SHORTEST ROUTE — Purple */}
+              {shortest && getCoords(shortest).length > 0 && (
+                <Polyline
+                  positions={getCoords(shortest)}
+                  pathOptions={{
+                    color: '#7C3AED',
+                    weight: selectedRouteType === 'shortest' ? 6 : 3,
+                    opacity: selectedRouteType === 'shortest' ? 0.95 : 0.4,
+                    dashArray: '8, 6'
+                  }}
+                />
+              )}
 
-            {/* Destination Point Marker */}
-            {routes.safest && routes.safest.coordinates.length > 0 && (
-              <Marker
-                position={routes.safest.coordinates[routes.safest.coordinates.length - 1]}
-                icon={destIcon}
-              >
-                <Popup>
-                  <div className="p-1 font-sans text-xs">
-                    <strong className="text-[#F59E0B]">🏁 Destination Point</strong>
-                    <p className="text-slate-500 mt-0.5">End of Safe Corridor Route</p>
-                  </div>
-                </Popup>
-              </Marker>
-            )}
-          </>
-        )}
+              {/* 3. SAFEST ROUTE — Green (visually prominent — recommended) */}
+              {safest && getCoords(safest).length > 0 && (
+                <Polyline
+                  positions={getCoords(safest)}
+                  pathOptions={{
+                    color: '#10B981',
+                    weight: selectedRouteType === 'safest' ? 8 : 5,
+                    opacity: selectedRouteType === 'safest' ? 0.95 : 0.6,
+                  }}
+                />
+              )}
+
+              {/* Destination Marker — last point of whichever route has geometry */}
+              {(() => {
+                const refRoute = safest || shortest || fastest;
+                const coords = getCoords(refRoute);
+                if (!coords.length) return null;
+                return (
+                  <Marker position={coords[coords.length - 1]} icon={destIcon}>
+                    <Popup>
+                      <div className="p-1 font-sans text-xs">
+                        <strong className="text-[#F59E0B]">🏁 Destination</strong>
+                        <p className="text-slate-500 mt-0.5">End of Safe Corridor Route</p>
+                      </div>
+                    </Popup>
+                  </Marker>
+                );
+              })()}
+            </>
+          );
+        })()}
 
         {/* User Location Marker */}
         {userLocation && (

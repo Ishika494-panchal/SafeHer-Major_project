@@ -54,7 +54,8 @@ app.use('/api/sos',  sosRouter);
 app.use('/reports',  reportsRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/heatmap',  heatmapRouter);
-app.use('/routes',   routesRouter);
+app.use('/routes',     routesRouter);
+app.use('/api/routes', routesRouter);
 app.use('/api/admin/reports', adminReportsRouter);
 
 // Root health check endpoint
