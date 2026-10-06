@@ -23,9 +23,20 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 
 // Enable CORS for frontend requests
+const allowedOrigins = process.env.FRONTEND_URL
+  ? [process.env.FRONTEND_URL]
+  : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+
 app.use(
   cors({
-    origin: '*',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+        return callback(null, true);
+      }
+      callback(new Error(`CORS: origin '${origin}' not allowed`));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['*']
@@ -77,9 +88,10 @@ app.use((err, req, res, next) => {
 });
 
 // Initialize database and start listening
+// Bind to 0.0.0.0 so Render (and other cloud hosts) can route traffic to the process
 initDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 SafeHer Express & Node.js Server running on http://127.0.0.1:${PORT}`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 SafeHer Express & Node.js Server running on port ${PORT}`);
   });
 });
 

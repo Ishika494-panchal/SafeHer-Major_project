@@ -4,6 +4,9 @@
   "description": "SafeHer Node.js Express Core Backend Engine",
   "main": "server.js",
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
